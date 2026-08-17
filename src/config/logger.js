@@ -2,9 +2,7 @@
 // structured logging info, and configurable logging.
 import pino from 'pino';
 import os from 'node:os';
-
-const logLevel = process.env.LOG_LEVEL || 'info';
-const env = process.env.NODE_ENV || 'production';
+import env from './env.js';
 
 const logger = pino({
   // set the min log level can be recorded.
@@ -12,7 +10,7 @@ const logger = pino({
   // levels: trace < debug < info < warn < error < fatal
   // if we set it `info`, `trace` and `debug` will be ignored.
   // common: `debug` for development, `info` for production.
-  level: logLevel,
+  level: env.logLevel,
 
   // fields inside `base` are added to every log entry
   // pino automatically includes `pid` and `hostname` by default
@@ -26,7 +24,7 @@ const logger = pino({
     pid: process.pid,
     hostname: os.hostname(),
     app: 'subscription-based-note-management-saas',
-    env
+    env: env.nodeEnv
   },
 
   // use ISO timestamps instead of Unix timestamps.
@@ -34,7 +32,7 @@ const logger = pino({
   timestamp: pino.stdTimeFunctions.isoTime,
 
   // print json in pretty format for non production env
-  ...(env !== 'production' && {
+  ...(env.nodeEnv !== 'production' && {
     transport: {
       target: 'pino-pretty',
       options: {
