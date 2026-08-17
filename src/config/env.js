@@ -62,6 +62,7 @@ const config = Object.freeze({
     nodeEnv === 'development' ? 'debug' : 'info',
     validLogLevels
   ),
+  dbUri: readRequired('DB_URI'),
 });
 
 export default config;
