@@ -7,6 +7,7 @@
 // it loads the variables into `process.env`
 import 'dotenv/config';
 import app from './app.js';
+import logger from './config/logger.js';
 
 // ─── Start Server ───────────────────────────────────────────────────────────────
 
@@ -16,5 +17,5 @@ import app from './app.js';
 // 3. behind the scenes, it's roughly: `http.createServer(app).listen(...)`. 
 const port = +process.env.PORT || 3000;
 const server = app.listen(port, () => {
-  console.log(`App running on port ${port}...`);
+  logger.info({ port }, 'Server started');
 });
