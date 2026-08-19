@@ -34,6 +34,58 @@ const readRequired = (varName) => {
   return value;
 }
 
+const readPositiveInteger = (varName, fallbackValue) => {
+  const rawValue = process.env[varName] || fallbackValue;
+  const value = Number(rawValue);
+  
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(
+      `Invalid ${varName} "${rawValue}". Expected a positive integer`
+    );
+  }
+
+  return value;
+}
+
+const readOrigins = (varName) => {
+  // extract origins to list
+  const rawOrigins = readRequired(varName)
+    .split(',')
+    .map(origin => origin.trim());
+
+  if (rawOrigins.some(origin => !origin)) {
+    throw new Error(`${varName} must contain a comma-separated list of origins`);
+  }
+
+  // validate and normalize each origin
+  const origins = rawOrigins.map(origin => {
+    let url;
+
+    try {
+      url = new URL(origin);
+    } catch {
+      throw new Error(`Invalid origin "${origin}" for ${varName} env variable`);
+    }
+
+    // make sure it supports only HTTP and HTTPS and 
+    // url is only an origin without a path, query, or fragment
+    if (
+      !['http:', 'https:'].includes(url.protocol) ||
+      url.username ||
+      url.password ||
+      url.pathname !== '/' ||
+      url.search ||
+      url.hash
+    ) {
+      throw new Error(`Invalid origin "${origin}" for ${varName} env variable`);
+    }
+
+    return url.origin;
+  });
+
+  return Object.freeze([...new Set(origins)]);
+}
+
 // there is a special validation method for `port` because we need
 // to convert it to a number and verify it is a valid TCP port
 const readPort = (fallbackVal) => {
@@ -63,6 +115,9 @@ const config = Object.freeze({
     validLogLevels
   ),
   dbUri: readRequired('DB_URI'),
+  allowedOrigins: readOrigins('ALLOWED_ORIGINS'),
+  rateLimitMaxRequests: readPositiveInteger('RATE_LIMIT_MAX_REQ_COUNT', 100),
+  rateLimitWindowTimeMinutes: readPositiveInteger('RATE_LIMIT_WINDOW_TIME_MINUTES', 30)
 });
 
 export default config;
