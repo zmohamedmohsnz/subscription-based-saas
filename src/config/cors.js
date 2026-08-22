@@ -32,7 +32,7 @@ const corsOptions = {
   // headers you send in the response, the browser expose some of them to
   // Frontend JS code and hide some. `Authorization` header is hidden by default
   // and we use to send JWT and so it must be exposed to the frontend code
-  exposedHeaders: ['Authorization']
+  exposedHeaders: ['Authorization', 'X-Request-Id'],
 };
 
 export default corsOptions;

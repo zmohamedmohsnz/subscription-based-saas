@@ -6,6 +6,7 @@ import cors from 'cors';
 import compression from 'compression';
 import corsOptions from './config/cors.js';
 import apiLimiter from './middleware/rate-limiter.js';
+import requestLogger from './middleware/request-logger.js';
 
 // ─── Create App ─────────────────────────────────────────────────────────────────
 
@@ -14,7 +15,16 @@ import apiLimiter from './middleware/rate-limiter.js';
 // routes and middleware that control how requests are handled.
 const app = express();
 
-// ─── GLOBAL MIDDLEWARE ──────────────────────────────────────────────────────────
+// ─── GLOBAL Middleware ──────────────────────────────────────────────────────────
+
+// this middleware does two jobs:
+// 1. automatically logs each request when its response finishes.
+// 2. attaches `req.log` property to `req` object so we
+// can belong a log to the request since every `req.log`
+// entry includes the request ID, allowing us to find
+// all logs that belong to the same request.
+// ex: `req.log.info('Request received');`
+app.use(requestLogger);
 
 // it improves security by setting HTTP response headers that instruct
 // browsers how to handle our responses, limiting what attacker can do.
