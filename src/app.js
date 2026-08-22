@@ -7,6 +7,8 @@ import compression from 'compression';
 import corsOptions from './config/cors.js';
 import apiLimiter from './middleware/rate-limiter.js';
 import requestLogger from './middleware/request-logger.js';
+import errorHandler from './middleware/error-handler.js';
+import ApiError from './errors/ApiError.js';
 
 // ─── Create App ─────────────────────────────────────────────────────────────────
 
@@ -54,5 +56,22 @@ app.use(express.json({ limit: '10kb' }));
 // compression effectiveness depends on the response's content type and size.
 // text and JSON usually compress well, while already-compressed content may not.
 app.use(compression());
+
+// ─── Handle Calling Undefined Routes Middleware ─────────────────────────────────
+
+// handle requests to undefined routes
+// in express 4, you can just use '*'
+// in express 5, wildcards must have a name
+app.all('/*splat', (req, res, next) => {
+  return next(new ApiError(
+    `Cannot find ${req.method} ${req.path}`,
+    404,
+    { code: 'ROUTE_NOT_FOUND' }
+  ));
+})
+
+// ─── Error Handler Middleware ───────────────────────────────────────────────────
+
+app.use(errorHandler);
 
 export default app;
